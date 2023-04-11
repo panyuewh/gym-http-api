@@ -59,7 +59,7 @@ class Envs(object):
     def reset(self, instance_id):
         env = self._lookup_env(instance_id)
         obs = env.reset()
-        return env.observation_space.to_jsonable(obs)
+        return env.observation_space.to_jsonable(obs[0])
 
     def step(self, instance_id, action, render):
         env = self._lookup_env(instance_id)
@@ -69,9 +69,9 @@ class Envs(object):
             nice_action = np.array(action)
         if render:
             env.render()
-        [observation, reward, done, info] = env.step(nice_action)
-        obs_jsonable = env.observation_space.to_jsonable(observation)
-        return [obs_jsonable, reward, done, info]
+        [observation, reward, terminated, trucated, info] = env.step(nice_action)
+        obs_jsonable = env.observation_space.to_jsonable(observation[0])
+        return [obs_jsonable, reward, terminated, trucated,  info]
 
     def get_action_space_contains(self, instance_id, x):
         env = self._lookup_env(instance_id)
@@ -130,7 +130,8 @@ class Envs(object):
             v_c = lambda count: False
         else:
             v_c = lambda count: count % video_callable == 0
-        self.envs[instance_id] = gym.wrappers.Monitor(env, directory, force=force, resume=resume, video_callable=v_c) 
+        # self.envs[instance_id] = gym.wrappers.Monitor(env, directory, force=force, resume=resume, video_callable=v_c) 
+        self.envs[instance_id] = gym.wrappers.RecordVideo(env, directory)
 
     def monitor_close(self, instance_id):
         env = self._lookup_env(instance_id)
@@ -255,9 +256,9 @@ def env_step(instance_id):
     json = request.get_json()
     action = get_required_param(json, 'action')
     render = get_optional_param(json, 'render', False)
-    [obs_jsonable, reward, done, info] = envs.step(instance_id, action, render)
+    [obs_jsonable, reward, terminated, trucated, info] = envs.step(instance_id, action, render)
     return jsonify(observation = obs_jsonable,
-                    reward = reward, done = done, info = info)
+                    reward = reward, done = terminated, info = info)
 
 @app.route('/v1/envs/<instance_id>/action_space/', methods=['GET'])
 def env_action_space_info(instance_id):

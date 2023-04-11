@@ -15,7 +15,7 @@ if __name__ == '__main__':
     client = Client(remote_base)
 
     # Set up environment
-    env_id = 'CartPole-v0'
+    env_id = 'CartPole-v1'
     instance_id = client.env_create(env_id)
 
     # Set up agent
