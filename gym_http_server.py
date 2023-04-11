@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from flask import Flask, request, jsonify
 import uuid
-import gym
+import gymnasium as gym
 import numpy as np
 import six
 import argparse
@@ -70,7 +70,7 @@ class Envs(object):
         if render:
             env.render()
         [observation, reward, terminated, trucated, info] = env.step(nice_action)
-        obs_jsonable = env.observation_space.to_jsonable(observation[0])
+        obs_jsonable = env.observation_space.to_jsonable(observation)
         return [obs_jsonable, reward, terminated, trucated,  info]
 
     def get_action_space_contains(self, instance_id, x):
@@ -107,21 +107,27 @@ class Envs(object):
         return self._get_space_properties(env.observation_space)
 
     def _get_space_properties(self, space):
+        def np_decoder (x):
+            if isinstance(x, np.integer):
+                return int(x)
+            if isinstance(x, np.floating):
+                return float(x)
+            raise TypeError
         info = {}
         info['name'] = space.__class__.__name__
         if info['name'] == 'Discrete':
-            info['n'] = space.n
+            info['n'] = int(space.n)
         elif info['name'] == 'Box':
             info['shape'] = space.shape
             # It's not JSON compliant to have Infinity, -Infinity, NaN.
             # Many newer JSON parsers allow it, but many don't. Notably python json
             # module can read and write such floats. So we only here fix "export version",
             # also make it flat.
-            info['low']  = [(x if x != -np.inf else -1e100) for x in np.array(space.low ).flatten()]
-            info['high'] = [(x if x != +np.inf else +1e100) for x in np.array(space.high).flatten()]
+            info['low']  = [(np_decoder(x) if x != -np.inf else -1e100) for x in np.array(space.low ).flatten()]
+            info['high'] = [(np_decoder(x) if x != +np.inf else +1e100) for x in np.array(space.high).flatten()]
         elif info['name'] == 'HighLow':
             info['num_rows'] = space.num_rows
-            info['matrix'] = [((float(x) if x != -np.inf else -1e100) if x != +np.inf else +1e100) for x in np.array(space.matrix).flatten()]
+            info['matrix'] = [((np_decoder(x) if x != -np.inf else -1e100) if x != +np.inf else +1e100) for x in np.array(space.matrix).flatten()]
         return info
 
     def monitor_start(self, instance_id, directory, force, resume, video_callable):
