@@ -1,5 +1,5 @@
 import requests
-import six.moves.urllib.parse as urlparse
+import urllib.parse as urlparse
 import json
 import os
 
@@ -118,16 +118,18 @@ class Client(object):
     def env_close(self, instance_id):
         route = '/v1/envs/{}/close/'.format(instance_id)
         self._post_request(route, None)
+  
+    # Deprecated!
+    # 
+    # def upload(self, training_dir, algorithm_id=None, api_key=None):
+    #     if not api_key:
+    #         api_key = os.environ.get('OPENAI_GYM_API_KEY')
 
-    def upload(self, training_dir, algorithm_id=None, api_key=None):
-        if not api_key:
-            api_key = os.environ.get('OPENAI_GYM_API_KEY')
-
-        route = '/v1/upload/'
-        data = {'training_dir': training_dir,
-                'algorithm_id': algorithm_id,
-                'api_key': api_key}
-        self._post_request(route, data)
+    #     route = '/v1/upload/'
+    #     data = {'training_dir': training_dir,
+    #             'algorithm_id': algorithm_id,
+    #             'api_key': api_key}
+    #     self._post_request(route, data)
 
     def shutdown_server(self):
         route = '/v1/shutdown/'
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     client = Client(remote_base)
 
     # Create environment
-    env_id = 'CartPole-v0'
+    env_id = 'CartPole-v1'
     instance_id = client.env_create(env_id)
 
     # Check properties
@@ -158,4 +160,4 @@ if __name__ == '__main__':
     init_obs = client.env_reset(instance_id)
     [observation, reward, done, info] = client.env_step(instance_id, 1, True)
     client.env_monitor_close(instance_id)
-    client.upload(training_dir='tmp')
+    # client.upload(training_dir='tmp')

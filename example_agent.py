@@ -36,18 +36,20 @@ if __name__ == '__main__':
 
         for j in range(max_steps):
             action = client.env_action_space_sample(instance_id)
-            ob, reward, done, _ = client.env_step(instance_id, action, render=True)
+            ob, reward, done, _ = client.env_step(instance_id, action, render=False)
             if done:
                 break
 
     # Dump result info to disk
     client.env_monitor_close(instance_id)
 
+    # Deprecated!
+    # 
     # Upload to the scoreboard. This expects the 'OPENAI_GYM_API_KEY'
     # environment variable to be set on the client side.
-    logger.info("""Successfully ran example agent using
-        gym_http_client. Now trying to upload results to the
-        scoreboard. If this fails, you likely need to set
-        os.environ['OPENAI_GYM_API_KEY']=<your_api_key>""")
+    # logger.info("""Successfully ran example agent using
+    #     gym_http_client. Now trying to upload results to the
+    #     scoreboard. If this fails, you likely need to set
+    #     os.environ['OPENAI_GYM_API_KEY']=<your_api_key>""")
 
-    client.upload(outdir)
+    # client.upload(outdir)

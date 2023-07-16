@@ -3,9 +3,8 @@ from flask import Flask, request, jsonify
 import uuid
 import gymnasium as gym
 import numpy as np
-import six
+import numbers 
 import argparse
-import sys
 import json
 
 
@@ -20,7 +19,7 @@ class Envs(object):
     on this server.
 
     When a new environment is created, such as with
-    envs.create('CartPole-v0'), it is stored under a short
+    envs.create('CartPole-v1'), it is stored under a short
     identifier (such as '3c657dbc'). Future API calls make
     use of this instance_id to identify which environment
     should be manipulated.
@@ -43,7 +42,7 @@ class Envs(object):
 
     def create(self, env_id, seed=None):
         try:
-            env = gym.make(env_id)
+            env = gym.make(env_id, render_mode="rgb_array")
             if seed:
                 env.seed(seed)
         except gym.error.Error:
@@ -63,7 +62,7 @@ class Envs(object):
 
     def step(self, instance_id, action, render):
         env = self._lookup_env(instance_id)
-        if isinstance( action, six.integer_types ):
+        if isinstance( action, numbers.Integral ):
             nice_action = action
         else:
             nice_action = np.array(action)
@@ -394,31 +393,33 @@ def env_close(instance_id):
     envs.env_close(instance_id)
     return ('', 204)
 
-@app.route('/v1/upload/', methods=['POST'])
-def upload():
-    """
-    Upload the results of training (as automatically recorded by
-    your env's monitor) to OpenAI Gym.
+# Deprecated!
+# 
+# @app.route('/v1/upload/', methods=['POST'])
+# def upload():
+#     """
+#     Upload the results of training (as automatically recorded by
+#     your env's monitor) to OpenAI Gym.
+#
+#     Parameters:
+#         - training_dir: A directory containing the results of a
+#         training run.
+#         - api_key: Your OpenAI API key
+#         - algorithm_id (default=None): An arbitrary string
+#         indicating the paricular version of the algorithm
+#         (including choices of parameters) you are running.
+#         """
+#     j = request.get_json()
+#     training_dir = get_required_param(j, 'training_dir')
+#     api_key      = get_required_param(j, 'api_key')
+#     algorithm_id = get_optional_param(j, 'algorithm_id', None)
 
-    Parameters:
-        - training_dir: A directory containing the results of a
-        training run.
-        - api_key: Your OpenAI API key
-        - algorithm_id (default=None): An arbitrary string
-        indicating the paricular version of the algorithm
-        (including choices of parameters) you are running.
-        """
-    j = request.get_json()
-    training_dir = get_required_param(j, 'training_dir')
-    api_key      = get_required_param(j, 'api_key')
-    algorithm_id = get_optional_param(j, 'algorithm_id', None)
-
-    try:
-        gym.upload(training_dir, algorithm_id, writeup=None, api_key=api_key,
-                   ignore_open_monitors=False)
-        return ('', 204)
-    except gym.error.AuthenticationError:
-        raise InvalidUsage('You must provide an OpenAI Gym API key')
+#     try:
+#         gym.upload(training_dir, algorithm_id, writeup=None, api_key=api_key,
+#                    ignore_open_monitors=False)
+#         return ('', 204)
+#     except gym.error.AuthenticationError:
+#         raise InvalidUsage('You must provide an OpenAI Gym API key')
 
 @app.route('/v1/shutdown/', methods=['POST'])
 def shutdown():

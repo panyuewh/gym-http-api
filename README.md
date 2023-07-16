@@ -126,7 +126,7 @@ API specification
       * param: `instance_id` -- a short identifier (such as '3c657dbc')
         for the environment instance
 
-  * POST `/v1/upload/`
+  * (**Deprecated**) POST `/v1/upload/`
       * Flush all monitor data to disk
       * param: `training_dir` -- A directory containing the results of a
         training run.
