@@ -43,9 +43,9 @@ class Client(object):
         resp = self.session.get(url)
         return self._parse_server_error_or_raise_for_status(resp)
         
-    def env_create(self, env_id):
+    def env_create(self, env_id, render_mode=None):
         route = '/v1/envs/'
-        data = {'env_id': env_id}
+        data = {'env_id': env_id, 'render_mode': render_mode}
         resp = self._post_request(route, data)
         instance_id = resp['instance_id']
         return instance_id
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     # Create environment
     env_id = 'CartPole-v1'
-    instance_id = client.env_create(env_id)
+    instance_id = client.env_create(env_id, render_mode="rgb_array")
 
     # Check properties
     all_envs = client.env_list_all()

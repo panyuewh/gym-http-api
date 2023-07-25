@@ -40,9 +40,9 @@ class Envs(object):
         except KeyError:
             raise InvalidUsage('Instance_id {} unknown'.format(instance_id))
 
-    def create(self, env_id, seed=None):
+    def create(self, env_id, render_mode=None, seed=None):
         try:
-            env = gym.make(env_id, render_mode="rgb_array")
+            env = gym.make(env_id, render_mode=render_mode)
             if seed:
                 env.seed(seed)
         except gym.error.Error:
@@ -208,8 +208,9 @@ def env_create():
         manipulated
     """
     env_id = get_required_param(request.get_json(), 'env_id')
+    render_mode = get_optional_param(request.get_json(), 'render_mode', None)
     seed = get_optional_param(request.get_json(), 'seed', None)
-    instance_id = envs.create(env_id, seed)
+    instance_id = envs.create(env_id, render_mode, seed)
     return jsonify(instance_id = instance_id)
 
 @app.route('/v1/envs/', methods=['GET'])
