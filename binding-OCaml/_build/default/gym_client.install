@@ -1,0 +1,8 @@
+lib: [
+  "_build/install/default/lib/gym_client/META"
+  "_build/install/default/lib/gym_client/dune-package"
+  "_build/install/default/lib/gym_client/opam"
+]
+bin: [
+  "_build/install/default/bin/gym_client_main"
+]

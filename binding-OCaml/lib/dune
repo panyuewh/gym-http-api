@@ -1,0 +1,3 @@
+(library
+ (name gym_client)
+ (libraries yojson cohttp-lwt cohttp-lwt-unix))

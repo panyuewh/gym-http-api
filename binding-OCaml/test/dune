@@ -1,0 +1,3 @@
+(test
+ (name gym_client_test)
+ (libraries gym_client))
