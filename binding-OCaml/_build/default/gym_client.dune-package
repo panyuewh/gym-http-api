@@ -1,4 +1,0 @@
-(lang dune 3.9)
-(name gym_client)
-(sections (lib .) (bin ../../bin))
-(files (lib (META dune-package opam)) (bin (gym_client_main)))
