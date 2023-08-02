@@ -24,7 +24,6 @@ data/
 # oasis generated files
 setup.data
 setup.log
-torch.install
 
 # Merlin configuring file for Vim and Emacs
 .merlin
