@@ -19,7 +19,12 @@
  (name gym_client)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends 
+  (ocaml (>= 5.1.1)) 
+  (dune (>= 3.13.0))
+  (yojson (>= 2.1.2))
+  (eio_main (>= 0.14)) 
+  (cohttp-eio (>= 6.0.0~beta2)))
  (tags
   (topics "to describe" your project)))
 
