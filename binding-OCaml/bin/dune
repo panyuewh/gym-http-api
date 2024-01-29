@@ -1,4 +1,4 @@
 (executable
  (public_name gym_client_main)
  (name main)
- (libraries gym_client))
+ (libraries eio_main cohttp-eio gym_client))

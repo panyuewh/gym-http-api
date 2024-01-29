@@ -18,90 +18,68 @@
 
 exception Error of string * string
 
-module Make (Client : Cohttp_lwt.S.Client) = struct
-  open Lwt
+module RestClient = struct
 
   (** {3 Utility functions} *)
 
   (* let parameters_of_json (o: json) : string =
-    begin match o with
-    | `Assoc [] -> ""
-    | `Assoc ((x, v) :: l) ->
-        let params = "?"^x^"="^(Yojson.Basic.to_string v) in
-        List.fold_left
-          (fun params (x, v) ->
-             params^"&"^x^"="^(Yojson.Basic.to_string v))
-          params l
-    | _ -> raise (Error ("Rest", (Format.sprintf "parameters_of_json %s : json object expected" (Yojson.Basic.pretty_to_string o))))
-    end *)
+     begin match o with
+     | `Assoc [] -> ""
+     | `Assoc ((x, v) :: l) ->
+         let params = "?"^x^"="^(Yojson.Basic.to_string v) in
+         List.fold_left
+           (fun params (x, v) ->
+              params^"&"^x^"="^(Yojson.Basic.to_string v))
+           params l
+     | _ -> raise (Error ("Rest", (Format.sprintf "parameters_of_json %s : json object expected" (Yojson.Basic.pretty_to_string o))))
+     end *)
 
   (** {3 Generic functions} *)
 
-  let post base_url method_ req =
-    let uri =
-      Uri.of_string (base_url^method_)
-    in
+
+  let post ~sw ~client base_url method_ req =
+    let uri = Uri.of_string (base_url ^ method_) in
     let headers =
       let h = Cohttp.Header.init () in
       (* let h = Cohttp.Header.add_authorization h (`Basic (wcs_cred.cred_username, wcs_cred.cred_password)) in *)
       let h = Cohttp.Header.add h "Content-Type" "application/json" in
       h
     in
-    let data = ((Cohttp.Body.of_string req) :> Cohttp_lwt.Body.t) in
-    let call =
-      Client.post ~body:data ~headers uri >>= (fun (resp, body) ->
-        let code = resp |> Cohttp.Response.status |> Cohttp.Code.code_of_status in
-        body |> Cohttp_lwt.Body.to_string >|= (fun body ->
-          begin match code with
-          | 200 | 201 | 204  -> body
-          | _ -> raise (Error ("Rest", (Format.sprintf "[POST %s] %d: %s" method_ code body)))
-          end))
-    in
-    let rsp = Lwt_main.run call in
-    rsp
+    let data = Cohttp_eio.Body.of_string req  in
+    let resp, body = Cohttp_eio.Client.post ~sw client ~body:data ~headers uri in
+    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
+    if Http.Status.compare resp.status `OK = 0 then
+      string_of_body
+    else
+      raise (Error ("Rest", Format.sprintf "[POST %s] %d: %s" method_ (Http.Status.to_int resp.status) string_of_body))
 
-  let get base_url method_ params =
-    let uri =
-      Uri.of_string (base_url^method_^params)
-    in
+  let get ~sw ~client base_url method_ params =
+    let uri = Uri.of_string (base_url ^ method_ ^ params) in
     let headers =
       let h = Cohttp.Header.init () in
       (* let h = Cohttp.Header.add_authorization h (`Basic (wcs_cred.cred_username, wcs_cred.cred_password)) in *)
       let h = Cohttp.Header.add h "Content-Type" "application/json" in
       h
     in
-    let call =
-      Client.get ~headers uri >>= (fun (resp, body) ->
-        let code = resp |> Cohttp.Response.status |> Cohttp.Code.code_of_status in
-        body |> Cohttp_lwt.Body.to_string >|= (fun body ->
-          begin match code with
-          | 200 -> body
-          | _ -> raise (Error ("Rest", (Format.sprintf "[GET %s] %d: %s" method_ code body)))
-          end))
-    in
-    let rsp = Lwt_main.run call in
-    rsp
+    let resp, body = Cohttp_eio.Client.get ~sw client ~headers uri in
+    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
+    if Http.Status.compare resp.status `OK = 0 then
+      string_of_body
+    else
+      raise (Error ("Rest", Format.sprintf "[GET %s] %d: %s" method_ (Http.Status.to_int resp.status) string_of_body))
 
-  let delete base_url method_ =
-    let uri =
-      Uri.of_string (base_url^method_)
-    in
+  let delete ~sw ~client base_url method_ =
+    let uri = Uri.of_string (base_url ^ method_) in
     let headers =
       let h = Cohttp.Header.init () in
       (* let h = Cohttp.Header.add_authorization h (`Basic (wcs_cred.cred_username, wcs_cred.cred_password)) in *)
       let h = Cohttp.Header.add h "Content-Type" "application/json" in
       h
     in
-    let call =
-      Client.delete ~headers uri >>= (fun (resp, body) ->
-        let code = resp |> Cohttp.Response.status |> Cohttp.Code.code_of_status in
-        body |> Cohttp_lwt.Body.to_string >|= (fun body ->
-          begin match code with
-          | 200 | 201 -> body
-          | _ -> raise (Error ("Rest", (Format.sprintf "[DELETE %s] %d: %s" method_ code body)))
-          end))
-    in
-    let rsp = Lwt_main.run call in
-    rsp
-
+    let resp, body = Cohttp_eio.Client.get ~sw client ~headers uri in
+    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
+    if Http.Status.compare resp.status `OK = 0 then
+      string_of_body
+    else
+      raise (Error ("Rest", Format.sprintf "[DELETE %s] %d: %s" method_ (Http.Status.to_int resp.status) string_of_body))
 end
