@@ -18,6 +18,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./binding-OCaml
+
     steps:
       - name: Checkout tree
         uses: actions/checkout@v4
