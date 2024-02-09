@@ -22,6 +22,7 @@
  (depends 
   (ocaml (>= 5.1.1)) 
   (dune (>= 3.13.0))
+  (ounit2 (>= 2.2.7))
   (yojson (>= 2.1.2))
   (eio (>= 0.14)) 
   (eio_main (>= 0.14)) 
