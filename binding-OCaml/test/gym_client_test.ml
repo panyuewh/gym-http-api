@@ -1,5 +1,13 @@
-(* open Gym_client
+open OUnit2
+(* open Gym_client *)
 
+let tests = "test suite" >::: [
+  "empty" >:: (fun _ -> assert_equal 0 0);
+  "singleton" >:: (fun _ -> assert_equal 1 0);
+]
+
+let _ = run_test_tt_main tests
+(*
 Eio_mock.Backend.run @@ fun () ->
   let net = Eio_mock.Net.make "mocknet" in
   let flow = Eio_mock.Flow.make "flow" in
