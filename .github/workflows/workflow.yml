@@ -69,8 +69,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set-up OCaml
+        # working-directory: ./binding-OCaml
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: "5.1.1"
 
       - uses: ocaml/setup-ocaml/lint-fmt@v2
+        working-directory: ./binding-OCaml
