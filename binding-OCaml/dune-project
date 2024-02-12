@@ -2,8 +2,9 @@
 
 (name gym_client)
 
-(generate_opam_files true)
+(map_workspace_root false)
 
+(generate_opam_files true)
 (source
  (github username/reponame))
 

@@ -33,6 +33,14 @@ module RestClient = struct
            params l
      | _ -> raise (Error ("Rest", (Format.sprintf "parameters_of_json %s : json object expected" (Yojson.Basic.pretty_to_string o))))
      end *)
+  
+  let body_or_error (resp: Http.Response.t) body =
+    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
+    match resp.status with
+    | `OK | `No_content -> string_of_body
+    | _ ->
+      raise (Error ("Rest", Format.sprintf "%d: %s" (Http.Status.to_int resp.status) string_of_body))
+
 
   (** {3 Generic functions} *)
 
@@ -47,11 +55,11 @@ module RestClient = struct
     in
     let data = Cohttp_eio.Body.of_string req  in
     let resp, body = Cohttp_eio.Client.post ~sw client ~body:data ~headers uri in
-    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
-    if Http.Status.compare resp.status `OK = 0 then
-      string_of_body
-    else
-      raise (Error ("Rest", Format.sprintf "[POST %s] %d: %s" method_ (Http.Status.to_int resp.status) string_of_body))
+    Logs.info (fun m -> m "POST %s" method_);
+    try body_or_error resp body with 
+    | Error (sub, msg) ->
+        Logs.err (fun m -> m "[POST %s] %s" method_ msg); 
+        raise (Error (sub, Format.sprintf "[POST %s] %s" method_ msg))
 
   let get ~sw ~client base_url method_ params =
     let uri = Uri.of_string (base_url ^ method_ ^ params) in
@@ -62,11 +70,11 @@ module RestClient = struct
       h
     in
     let resp, body = Cohttp_eio.Client.get ~sw client ~headers uri in
-    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
-    if Http.Status.compare resp.status `OK = 0 then
-      string_of_body
-    else
-      raise (Error ("Rest", Format.sprintf "[GET %s] %d: %s" method_ (Http.Status.to_int resp.status) string_of_body))
+    Logs.info (fun m -> m "GET %s" method_);
+    try body_or_error resp body with 
+    | Error (sub, msg) -> 
+        Logs.err (fun m -> m "[GET %s] %s" method_ msg); 
+        raise (Error (sub, Format.sprintf "[GET %s] %s" method_ msg))
 
   let delete ~sw ~client base_url method_ =
     let uri = Uri.of_string (base_url ^ method_) in
@@ -77,9 +85,9 @@ module RestClient = struct
       h
     in
     let resp, body = Cohttp_eio.Client.get ~sw client ~headers uri in
-    let string_of_body = Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int in
-    if Http.Status.compare resp.status `OK = 0 then
-      string_of_body
-    else
-      raise (Error ("Rest", Format.sprintf "[DELETE %s] %d: %s" method_ (Http.Status.to_int resp.status) string_of_body))
+    Logs.info (fun m -> m "DELETE %s" method_);
+    try body_or_error resp body with 
+    | Error (sub, msg) -> 
+        Logs.err (fun m -> m "[DELETE %s] %s" method_ msg); 
+        raise (Error (sub, Format.sprintf "[DELETE %s] %s" method_ msg))
 end

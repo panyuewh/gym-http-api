@@ -145,7 +145,6 @@ let env_action_space_sample : t -> act_typ =
   | `Int x -> Int x
   | `List y -> Floats (List.map float_of y)
   | _ ->
-      print_endline (to_string rsp);
       failwith "Unexpected action type"
 
 (** [env_action_space_contains instance_id x] checks to see if the

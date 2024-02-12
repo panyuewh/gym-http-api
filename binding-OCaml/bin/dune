@@ -1,4 +1,5 @@
 (executable
  (public_name gym_client_main)
- (name main)
- (libraries eio_main cohttp-eio gym_client))
+ (name main) 
+ (modes byte exe)
+ (libraries logs.fmt eio_main cohttp-eio gym_client))

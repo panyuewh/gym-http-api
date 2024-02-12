@@ -1,4 +1,6 @@
 let () =
+  Logs.set_reporter (Logs_fmt.reporter ());
+  Logs.set_level (Some Logs.Info);
   Eio_main.run @@ fun env ->
   let client = Cohttp_eio.Client.make ~https:None env#net in
   Eio.Switch.run @@ fun sw ->

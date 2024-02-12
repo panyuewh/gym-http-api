@@ -1,3 +1,4 @@
 (test
- (name gym_client_test)
+ (name gym_client_test) 
+ (modes byte exe)
  (libraries ounit2 gym_client))
